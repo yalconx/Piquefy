@@ -11,6 +11,7 @@ const staticPages = [
   { url: "/pique/eurovision", priority: "0.8", changefreq: "monthly" },
   { url: "/pique/mundial-2026", priority: "0.8", changefreq: "monthly" },
   { url: "/pique/oscar", priority: "0.7", changefreq: "monthly" },
+  { url: "/pique/social", priority: "0.8", changefreq: "weekly" },
   { url: "/pique/clasico", priority: "0.8", changefreq: "weekly" },
   { url: "/privacidad", priority: "0.2", changefreq: "yearly" },
   { url: "/legal", priority: "0.2", changefreq: "yearly" },

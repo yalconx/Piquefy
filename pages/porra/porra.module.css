@@ -463,3 +463,94 @@
 
 .feedText { font-size: 0.82rem; color: #ccc; line-height: 1.4; }
 .feedText strong { color: var(--text); }
+
+/* ── My Bet Panel ── */
+.myBetPanel {
+  background: rgba(255,77,28,0.06);
+  border: 1.5px solid rgba(255,77,28,0.2);
+  border-radius: var(--radius);
+  padding: 1rem;
+  display: flex; flex-direction: column; gap: 0.75rem;
+  animation: popIn 0.3s ease both;
+}
+
+.myBetHeader {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.myBetTitle {
+  font-family: 'Unbounded', cursive;
+  font-size: 0.72rem; color: var(--flame);
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+
+.myBetEditBtn {
+  background: rgba(255,77,28,0.15);
+  border: 1px solid rgba(255,77,28,0.3);
+  border-radius: 20px; color: var(--flame);
+  padding: 0.25rem 0.75rem; font-size: 0.75rem;
+  font-family: 'DM Sans', sans-serif; font-weight: 600;
+}
+
+.myBetLocked {
+  font-size: 0.72rem; color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.myBetInfo { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.myBetRow {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.myBetLabel { font-size: 0.78rem; color: var(--muted); }
+.myBetVal { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+
+.myBetDeleteBtn {
+  background: transparent;
+  color: #ff6b6b; font-size: 0.78rem;
+  font-family: 'DM Sans', sans-serif; font-weight: 600;
+  padding: 0.4rem 0; text-align: left;
+  margin-top: 0.25rem;
+}
+
+.confirmRow {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+.confirmText { font-size: 0.78rem; color: #ff9999; flex-basis: 100%; }
+.confirmYes {
+  background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.4);
+  border-radius: 20px; color: #ff6b6b;
+  padding: 0.3rem 0.9rem; font-size: 0.78rem;
+  font-family: 'DM Sans', sans-serif; font-weight: 700;
+}
+.confirmNo {
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  border-radius: 20px; color: var(--muted);
+  padding: 0.3rem 0.9rem; font-size: 0.78rem;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.myBetEditForm { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.editBtns { display: flex; gap: 0.5rem; }
+
+.saveBtn {
+  flex: 1;
+  background: linear-gradient(135deg, var(--flame), var(--flame2));
+  color: #fff; border-radius: 10px;
+  padding: 0.6rem; font-size: 0.85rem; font-weight: 700;
+  box-shadow: 0 4px 16px rgba(255,77,28,0.3);
+}
+
+.cancelBtn {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 10px; color: var(--muted);
+  padding: 0.6rem; font-size: 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+}
