@@ -131,7 +131,7 @@ function NameScreen({ porra, onJoin, isAdmin }) {
           </>
         )}
         <button className={styles.watchBtn} onClick={() => onJoin(null)}>
-          {isAdmin ? "👑 Gestionar sin apostar" : "👁 Solo quiero ver"}
+          {isAdmin ? "👑 Gestionar sin apostar" : "👁 Solo quiero mirar (por ahora)"}
         </button>
       </div>
     </div>
@@ -450,12 +450,12 @@ function ResultsPanel({ porra, code, myBetId }) {
 
   return (
     <div className={styles.resultsSection}>
-      <div className={styles.resultsBanner}>🏆 Resultado: <strong>{porra.winningOption}</strong></div>
+      <div className={styles.resultsBanner}>🏆 Y el ganador es... <strong>{porra.winningOption}</strong></div>
       {myResult && (
         <div className={`${styles.myResult} ${isWinner ? styles.myResultWin : styles.myResultLoss}`}>
           {isWinner
-            ? `🤑 ¡Ganaste! Te llevas ${fmt(myResult.payout)} (beneficio: ${fmt(myResult.profit)})`
-            : `😤 Esta vez no. Apostaste ${fmt(myResult.amount)} a ${myResult.option}`}
+            ? `🤑 ¡Que sí, que tenías razón! Te llevas ${fmt(myResult.payout)} limpio.`
+            : `😤 Esta vez no era. Apostaste ${fmt(myResult.amount)} a ${myResult.option} — la próxima va.`}
         </div>
       )}
       <div className={styles.winnersList}>
@@ -472,8 +472,8 @@ function ResultsPanel({ porra, code, myBetId }) {
       </div>
       {porra.potType === "distributed" && transfers.length > 0 && (
         <div className={styles.transfersSection}>
-          <h3>Transferencias sugeridas</h3>
-          <p className={styles.transfersHint}>Piquefy ha calculado el mínimo de transferencias para liquidar la porra:</p>
+          <h3>¿Quién le debe a quién? Aquí va:</h3>
+          <p className={styles.transfersHint}>Hemos calculado el mínimo de transferencias para liquidar el pique:</p>
           {transfers.map((t, i) => (
             <div key={i} className={styles.transferRow}>
               <span className={styles.transferFrom}>{t.from}</span>

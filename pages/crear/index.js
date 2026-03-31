@@ -130,7 +130,7 @@ export default function CrearPorra() {
                 <div className={styles.pinLabel}>Código de organizador</div>
                 <div className={styles.pinCode}>{createdPorra.adminPin}</div>
                 <div className={styles.pinWarning}>
-                  ⚠️ Si lo pierdes, no podrás recuperar el acceso como organizador
+                  ⚠️ Guárdalo bien. Sin este código, no podrás gestionar la porra desde otro dispositivo.
                 </div>
               </div>
 
@@ -179,7 +179,7 @@ export default function CrearPorra() {
           {step === 1 && (
             <div className={styles.form} style={{animation:"slideUp 0.3s ease both"}}>
               <h1 className={styles.formTitle}>La porra 🔥</h1>
-              <p className={styles.formSubtitle}>Define de qué va y cuándo cierra</p>
+              <p className={styles.formSubtitle}>¿De qué va el pique y cuándo se acaba el tiempo?</p>
 
               <div className={styles.field}>
                 <label>Tu nombre (organizador)</label>
@@ -234,7 +234,7 @@ export default function CrearPorra() {
           {step === 3 && (
             <div className={styles.form} style={{animation:"slideUp 0.3s ease both"}}>
               <h1 className={styles.formTitle}>Las reglas 📋</h1>
-              <p className={styles.formSubtitle}>Últimos ajustes antes de lanzar</p>
+              <p className={styles.formSubtitle}>Casi listo. Afina los detalles.</p>
 
               <div className={styles.field}>
                 <label>Importe de apuesta</label>
@@ -267,8 +267,8 @@ export default function CrearPorra() {
                 </div>
                 <p className={styles.hint}>
                   {potType === "distributed"
-                    ? "Nadie tiene el dinero. Piquefy calcula quién le debe cuánto a quién."
-                    : "Alguien guarda el bote. Piquefy calcula cuánto gana cada ganador."}
+                    ? "Nadie guarda nada. Piquefy calcula al final quién le pasa pasta a quién."
+                    : "Alguien guarda el bote. Piquefy calcula a quién y cuánto hay que darle."}
                 </p>
               </div>
 
