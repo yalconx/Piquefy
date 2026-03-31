@@ -1,5 +1,6 @@
 import '../styles/globals.css';
 import Head from 'next/head';
+import Script from 'next/script';
 
 export default function App({ Component, pageProps }) {
   return (
@@ -9,7 +10,6 @@ export default function App({ Component, pageProps }) {
         <meta name="theme-color" content="#0A0A0A" />
         <meta name="robots" content="index, follow" />
         <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>" />
-        {/* Schema.org: SoftwareApplication + Game */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify({
@@ -37,6 +37,23 @@ export default function App({ Component, pageProps }) {
           })}}
         />
       </Head>
+
+      {/* Google Analytics GA4 — G-X4TMF772ZB */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-X4TMF772ZB"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-X4TMF772ZB', {
+            page_path: window.location.pathname,
+          });
+        `}
+      </Script>
+
       <Component {...pageProps} />
     </>
   );
