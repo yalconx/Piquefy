@@ -59,11 +59,11 @@ export default function Home() {
           <div className={styles.badge}>🔥 Gratis · Sin registro · 100% social</div>
           <h1 className={styles.title}>
             <span className={styles.titleMain}>PIQUEFY</span>
-            <span className={styles.titleSub}>Cualquier momento es un pique.</span>
+            <span className={styles.titleSub}>Porras entre amigos sin líos.</span>
           </h1>
           <p className={styles.subtitle}>
-            Lanza tu porra, prode o quiniela en segundos.<br />
-            Comparte por WhatsApp y que gane el mejor.
+            Crea tu porra en segundos, comparte por WhatsApp<br />
+            y que gane el mejor. <span className={styles.subtitleAccent}>Nosotros calculamos quién cobra y quién paga.</span>
           </p>
         </header>
 

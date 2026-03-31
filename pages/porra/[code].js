@@ -9,9 +9,62 @@ import styles from "./porra.module.css";
 const EMOJIS = ["🔥","💥","⚡","🎯","💸","🏆","😤","🤑","🎲","🎰"];
 function rEmoji() { return EMOJIS[Math.floor(Math.random() * EMOJIS.length)]; }
 
+// ── PIN recovery screen ──────────────────────────────────────────────
+function PinRecovery({ code, onRecovered }) {
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const verify = async () => {
+    if (pin.length !== 6) { setError("El código tiene 6 dígitos"); return; }
+    setLoading(true);
+    const snap = await get(ref(db, `porras/${code}`));
+    if (!snap.exists()) { setError("Porra no encontrada"); setLoading(false); return; }
+    const data = snap.val();
+    if (data.adminPin === pin) {
+      if (typeof window !== "undefined") sessionStorage.setItem(`porra_admin_${code}`, data.adminToken);
+      onRecovered(data.adminToken, data);
+    } else {
+      setError("Código incorrecto");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className={styles.nameScreen}>
+      <div className={styles.nameCard}>
+        <div style={{fontSize:"2rem",textAlign:"center"}}>🔐</div>
+        <div className={styles.namePorraTitle} style={{textAlign:"center"}}>Acceso de organizador</div>
+        <p className={styles.namePorraDesc} style={{textAlign:"center"}}>
+          Introduce el código de 6 dígitos que recibiste al crear la porra
+        </p>
+        <div className={styles.nameField}>
+          <label>Código de organizador</label>
+          <input
+            placeholder="000000"
+            maxLength={6}
+            value={pin}
+            onChange={e => { setPin(e.target.value.replace(/\D/g,"")); setError(""); }}
+            onKeyDown={e => e.key === "Enter" && verify()}
+            style={{textAlign:"center", letterSpacing:"0.3em", fontSize:"1.4rem", fontFamily:"'Unbounded', cursive"}}
+            autoFocus
+          />
+        </div>
+        {error && <p className={styles.nameError}>{error}</p>}
+        <button className={styles.joinBtn} onClick={verify} disabled={loading}>
+          {loading ? "Verificando..." : "Acceder como organizador"}
+        </button>
+        <button className={styles.watchBtn} onClick={() => onRecovered(null, null)}>
+          Volver a la porra como jugador
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Name + bet screen ────────────────────────────────────────────────
-function NameScreen({ porra, onJoin }) {
-  const [name, setName] = useState("");
+function NameScreen({ porra, onJoin, isAdmin }) {
+  const [name, setName] = useState(porra.organizerName && isAdmin ? porra.organizerName : "");
   const [option, setOption] = useState("");
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
@@ -33,13 +86,19 @@ function NameScreen({ porra, onJoin }) {
         <div className={styles.namePorraTitle}>{porra.title}</div>
         {porra.description && <p className={styles.namePorraDesc}>{porra.description}</p>}
 
+        {isAdmin && (
+          <div className={styles.adminJoinBadge}>
+            👑 Entrando como organizador — también puedes apostar
+          </div>
+        )}
+
         {isClosed ? (
           <div className={styles.closedMsg}>🔒 Esta porra ya está cerrada</div>
         ) : (
           <>
             <div className={styles.nameField}>
               <label>Tu nombre</label>
-              <input placeholder="¿Cómo te llaman?" value={name} onChange={e => { setName(e.target.value); setError(""); }} maxLength={20} autoFocus />
+              <input placeholder="¿Cómo te llaman?" value={name} onChange={e => { setName(e.target.value); setError(""); }} maxLength={20} autoFocus={!isAdmin} />
             </div>
             <div className={styles.nameField}>
               <label>Tu apuesta</label>
@@ -59,17 +118,21 @@ function NameScreen({ porra, onJoin }) {
                 {!porra.minBet && porra.maxBet && <span className={styles.betRange}> (máx. {fmt(porra.maxBet)})</span>}
               </label>
               <div className={styles.amountRow}>
-                <input type="number" min="0" step="0.5" placeholder="0,00" value={amount} onChange={e => { setAmount(e.target.value); setError(""); }} onKeyDown={e => e.key === "Enter" && validate() && onJoin({ name: name.trim(), option, amount: Number(amount) })} />
+                <input type="number" min="0" step="0.5" placeholder="0,00" value={amount}
+                  onChange={e => { setAmount(e.target.value); setError(""); }}
+                  onKeyDown={e => e.key === "Enter" && validate() && onJoin({ name: name.trim(), option, amount: Number(amount) })} />
                 <span className={styles.amountEuro}>€</span>
               </div>
             </div>
             {error && <p className={styles.nameError}>{error}</p>}
             <button className={styles.joinBtn} onClick={() => validate() && onJoin({ name: name.trim(), option, amount: Number(amount) })}>
-              🔥 Apostar
+              🔥 {isAdmin ? "Apostar y gestionar porra" : "Apostar"}
             </button>
           </>
         )}
-        <button className={styles.watchBtn} onClick={() => onJoin(null)}>👁 Solo quiero ver</button>
+        <button className={styles.watchBtn} onClick={() => onJoin(null)}>
+          {isAdmin ? "👑 Gestionar sin apostar" : "👁 Solo quiero ver"}
+        </button>
       </div>
     </div>
   );
@@ -95,9 +158,7 @@ function MyBetPanel({ bet, porra, code, betId, onUpdated }) {
     if (porra.maxBet && amt > porra.maxBet) { setError(`Máximo ${fmt(porra.maxBet)}`); return; }
     setLoading(true);
     await update(ref(db, `porras/${code}/bets/${betId}`), { option: newOption, amount: amt });
-    setLoading(false);
-    setEditing(false);
-    setError("");
+    setLoading(false); setEditing(false); setError("");
     onUpdated();
   };
 
@@ -106,7 +167,7 @@ function MyBetPanel({ bet, porra, code, betId, onUpdated }) {
     await remove(ref(db, `porras/${code}/bets/${betId}`));
     if (typeof window !== "undefined") sessionStorage.removeItem(`porra_bet_${code}`);
     setLoading(false);
-    onUpdated(true); // true = deleted
+    onUpdated(true);
   };
 
   return (
@@ -116,12 +177,8 @@ function MyBetPanel({ bet, porra, code, betId, onUpdated }) {
         {canEdit && !editing && (
           <button className={styles.myBetEditBtn} onClick={() => setEditing(true)}>✏️ Editar</button>
         )}
-        {!canEdit && isOpen && (
-          <span className={styles.myBetLocked} title="El organizador no permite cambios">🔒 Fijada</span>
-        )}
-        {!isOpen && (
-          <span className={styles.myBetLocked}>🔒 Cerrada</span>
-        )}
+        {!canEdit && isOpen && <span className={styles.myBetLocked}>🔒 Fijada por el organizador</span>}
+        {!isOpen && <span className={styles.myBetLocked}>🔒 Porra cerrada</span>}
       </div>
 
       {!editing ? (
@@ -152,9 +209,7 @@ function MyBetPanel({ bet, porra, code, betId, onUpdated }) {
             <label>Nueva opción</label>
             <div className={styles.optionGrid}>
               {porra.options.map(opt => (
-                <button key={opt} className={`${styles.optionBtn} ${newOption === opt ? styles.optionBtnActive : ""}`} onClick={() => { setNewOption(opt); setError(""); }}>
-                  {opt}
-                </button>
+                <button key={opt} className={`${styles.optionBtn} ${newOption === opt ? styles.optionBtnActive : ""}`} onClick={() => { setNewOption(opt); setError(""); }}>{opt}</button>
               ))}
             </div>
           </div>
@@ -183,6 +238,7 @@ function PorraView({ porra, code, myBetId, isAdmin, onBetDeleted }) {
   const [feed, setFeed] = useState([]);
   const [timeLeft, setTimeLeft] = useState("");
   const [copied, setCopied] = useState(false);
+  const [adminView, setAdminView] = useState("jugador"); // "jugador" | "admin"
   const prevBetsRef = useRef({});
 
   useEffect(() => {
@@ -221,19 +277,18 @@ function PorraView({ porra, code, myBetId, isAdmin, onBetDeleted }) {
   gameState.options.forEach(o => { byOption[o] = []; });
   betsArr.forEach(b => { if (byOption[b.option]) byOption[b.option].push(b); });
   const optionTotals = gameState.options.map(o => ({
-    option: o, total: byOption[o].reduce((s, b) => s + b.amount, 0),
-    count: byOption[o].length, bets: byOption[o],
+    option: o,
+    total: byOption[o].reduce((s, b) => s + b.amount, 0),
+    count: byOption[o].length,
+    bets: byOption[o],
   })).sort((a, b) => b.total - a.total);
 
   const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/porra/${code}` : "";
-
   const shareWhatsApp = () => {
     const text = `🔥 ¡Apúntate a la porra!\n*${gameState.title}*\nEntra con el código *${code}* o pulsa:\n${shareUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
-
   const copyLink = () => { navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); };
-
   const declareWinner = async (option) => {
     await update(ref(db, `porras/${code}`), { status: "resolved", winningOption: option });
   };
@@ -255,6 +310,24 @@ function PorraView({ porra, code, myBetId, isAdmin, onBetDeleted }) {
         </div>
       </header>
 
+      {/* Admin toggle */}
+      {isAdmin && (
+        <div className={styles.adminToggleBar}>
+          <button
+            className={`${styles.adminToggleBtn} ${adminView === "jugador" ? styles.adminToggleActive : ""}`}
+            onClick={() => setAdminView("jugador")}
+          >
+            🎴 Vista jugador
+          </button>
+          <button
+            className={`${styles.adminToggleBtn} ${adminView === "admin" ? styles.adminToggleActive : ""}`}
+            onClick={() => setAdminView("admin")}
+          >
+            👑 Vista organizador
+          </button>
+        </div>
+      )}
+
       <div className={styles.shareBar}>
         <button className={styles.waShareBtn} onClick={shareWhatsApp}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -274,48 +347,10 @@ function PorraView({ porra, code, myBetId, isAdmin, onBetDeleted }) {
           </div>
         </div>
 
-        {/* My bet panel */}
-        {myBet && (
-          <MyBetPanel
-            bet={myBet}
-            porra={gameState}
-            code={code}
-            betId={myBetId}
-            onUpdated={(deleted) => { if (deleted) onBetDeleted(); }}
-          />
-        )}
-
-        {/* Options breakdown */}
-        <div className={styles.optionsSection}>
-          <h2 className={styles.sectionTitle}>Distribución</h2>
-          {optionTotals.map(({ option, total, count, bets: optBets }) => {
-            const pct = totalPot > 0 ? Math.round((total / totalPot) * 100) : 0;
-            const isWinner = isResolved && gameState.winningOption === option;
-            return (
-              <div key={option} className={`${styles.optionCard} ${isWinner ? styles.optionWinner : ""}`}>
-                <div className={styles.optionHeader}>
-                  <span className={styles.optionName}>{option} {isWinner ? "🏆" : ""}</span>
-                  <span className={styles.optionTotal}>{fmt(total)} · {count} apuesta{count !== 1 ? "s" : ""}</span>
-                </div>
-                <div className={styles.optionBar}>
-                  <div className={styles.optionBarFill} style={{ width: `${pct}%`, background: isWinner ? "var(--gold)" : "var(--flame)" }} />
-                </div>
-                <div className={styles.optionBetters}>
-                  {optBets.map((b, i) => (
-                    <span key={i} className={`${styles.betterChip} ${b.id === myBetId ? styles.betterChipMe : ""}`}>
-                      {b.name} · {fmt(b.amount)}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Admin panel */}
-        {isAdmin && (
+        {/* Admin view: organizer panel */}
+        {isAdmin && adminView === "admin" && (
           <div className={styles.adminSection}>
-            <h2 className={styles.sectionTitle}>Panel del organizador</h2>
+            <h2 className={styles.sectionTitle}>Panel del organizador 👑</h2>
             {isOpen && (
               <button className={styles.adminBtn} onClick={() => update(ref(db, `porras/${code}`), { status: "closed" })}>
                 🔒 Cerrar apuestas ahora
@@ -331,12 +366,59 @@ function PorraView({ porra, code, myBetId, isAdmin, onBetDeleted }) {
                 </div>
               </div>
             )}
+            {/* Participants list for admin */}
+            <div className={styles.adminParticipants}>
+              <p className={styles.declareHint}>{betsArr.length} participante{betsArr.length !== 1 ? "s" : ""}</p>
+              {betsArr.map((b, i) => (
+                <div key={i} className={styles.adminParticipantRow}>
+                  <span>{b.name}</span>
+                  <span>{b.option}</span>
+                  <span>{fmt(b.amount)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {isResolved && <ResultsPanel porra={gameState} code={code} myBetId={myBetId} />}
+        {/* Player view: my bet + distribution */}
+        {(!isAdmin || adminView === "jugador") && (
+          <>
+            {myBet && (
+              <MyBetPanel bet={myBet} porra={gameState} code={code} betId={myBetId}
+                onUpdated={(deleted) => { if (deleted) onBetDeleted(); }} />
+            )}
 
-        {/* Feed */}
+            <div className={styles.optionsSection}>
+              <h2 className={styles.sectionTitle}>Distribución</h2>
+              {optionTotals.map(({ option, total, count, bets: optBets }) => {
+                const pct = totalPot > 0 ? Math.round((total / totalPot) * 100) : 0;
+                const isWinner = isResolved && gameState.winningOption === option;
+                return (
+                  <div key={option} className={`${styles.optionCard} ${isWinner ? styles.optionWinner : ""}`}>
+                    <div className={styles.optionHeader}>
+                      <span className={styles.optionName}>{option} {isWinner ? "🏆" : ""}</span>
+                      <span className={styles.optionTotal}>{fmt(total)} · {count} apuesta{count !== 1 ? "s" : ""}</span>
+                    </div>
+                    <div className={styles.optionBar}>
+                      <div className={styles.optionBarFill} style={{ width: `${pct}%`, background: isWinner ? "var(--gold)" : "var(--flame)" }} />
+                    </div>
+                    <div className={styles.optionBetters}>
+                      {optBets.map((b, i) => (
+                        <span key={i} className={`${styles.betterChip} ${b.id === myBetId ? styles.betterChipMe : ""}`}>
+                          {b.name} · {fmt(b.amount)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {isResolved && <ResultsPanel porra={gameState} code={code} myBetId={myBetId} />}
+          </>
+        )}
+
+        {/* Feed — always visible */}
         <div className={styles.feedSection}>
           <h2 className={styles.sectionTitle}>Actividad</h2>
           {feed.length === 0 && betsArr.length === 0 ? (
@@ -390,7 +472,8 @@ function ResultsPanel({ porra, code, myBetId }) {
       </div>
       {porra.potType === "distributed" && transfers.length > 0 && (
         <div className={styles.transfersSection}>
-          <h3>Transferencias a realizar</h3>
+          <h3>Transferencias sugeridas</h3>
+          <p className={styles.transfersHint}>Piquefy ha calculado el mínimo de transferencias para liquidar la porra:</p>
           {transfers.map((t, i) => (
             <div key={i} className={styles.transferRow}>
               <span className={styles.transferFrom}>{t.from}</span>
@@ -467,6 +550,7 @@ export default function PorraPage() {
   const [myBetId, setMyBetId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [joined, setJoined] = useState(false);
+  const [showPinRecovery, setShowPinRecovery] = useState(false);
 
   useEffect(() => {
     if (!code) return;
@@ -484,10 +568,8 @@ export default function PorraPage() {
       }
       const savedBetId = typeof window !== "undefined" ? sessionStorage.getItem(`porra_bet_${code}`) : null;
       if (savedBetId && data.bets && data.bets[savedBetId]) {
-        setMyBetId(savedBetId);
-        setJoined(true);
+        setMyBetId(savedBetId); setJoined(true);
       } else if (savedBetId) {
-        // Bet was deleted, clear storage
         sessionStorage.removeItem(`porra_bet_${code}`);
       }
     });
@@ -499,21 +581,51 @@ export default function PorraPage() {
     const bet = { id: betId, name: betData.name, option: betData.option, amount: betData.amount, ts: Date.now() };
     await update(ref(db, `porras/${code}/bets`), { [betId]: bet });
     if (typeof window !== "undefined") sessionStorage.setItem(`porra_bet_${code}`, betId);
-    setMyBetId(betId);
-    setJoined(true);
+    setMyBetId(betId); setJoined(true);
   };
 
-  const handleBetDeleted = () => {
-    setMyBetId(null);
-    setJoined(false); // Go back to name screen to re-bet or just watch
+  const handleBetDeleted = () => { setMyBetId(null); setJoined(false); };
+
+  const handlePinRecovered = (token, data) => {
+    if (token) {
+      setIsAdmin(true);
+      if (data) setPorra(data);
+    }
+    setShowPinRecovery(false);
+    setJoined(false); // Go to name screen so admin can bet if they want
   };
 
   if (loading) return <div className={styles.loading}>Cargando porra...</div>;
   if (notFound) return <div className={styles.loading}>Porra no encontrada 😕</div>;
+
+  if (showPinRecovery) return (
+    <>
+      <Head><title>Acceso organizador — Piquefy</title></Head>
+      <PinRecovery code={code} onRecovered={handlePinRecovered} />
+    </>
+  );
+
   if (!joined && !isAdmin) return (
     <>
-      <Head><title>{porra.title} — Piquefy</title></Head>
-      <NameScreen porra={porra} onJoin={handleJoin} />
+      <Head><title>{porra?.title} — Piquefy</title></Head>
+      <div>
+        <NameScreen porra={porra} onJoin={handleJoin} isAdmin={false} />
+        <div style={{textAlign:"center", padding:"0.5rem"}}>
+          <button
+            onClick={() => setShowPinRecovery(true)}
+            style={{background:"none", border:"none", color:"#555", fontSize:"0.75rem", cursor:"pointer", fontFamily:"'DM Sans', sans-serif"}}
+          >
+            🔑 Soy el organizador y perdí el acceso
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
+  if (!joined && isAdmin) return (
+    <>
+      <Head><title>{porra?.title} — Piquefy</title></Head>
+      <NameScreen porra={porra} onJoin={handleJoin} isAdmin={true} />
     </>
   );
 

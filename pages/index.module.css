@@ -232,3 +232,8 @@ details[open] .faqQ::before { content: "▼  "; }
   .seoFeaturesGrid { grid-template-columns: 1fr; }
   .titleMain { font-size: 3.5rem; }
 }
+
+.subtitleAccent {
+  color: var(--flame2);
+  font-weight: 600;
+}

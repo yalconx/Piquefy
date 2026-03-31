@@ -554,3 +554,71 @@
   padding: 0.6rem; font-size: 0.85rem;
   font-family: 'DM Sans', sans-serif;
 }
+
+/* ── Admin toggle bar ── */
+.adminToggleBar {
+  display: flex;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  gap: 0.4rem;
+}
+
+.adminToggleBtn {
+  flex: 1;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  padding: 0.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.adminToggleActive {
+  background: rgba(255,77,28,0.15);
+  border-color: var(--flame);
+  color: var(--flame);
+}
+
+/* ── Admin participants list ── */
+.adminParticipants {
+  display: flex; flex-direction: column;
+  gap: 0.3rem; margin-top: 0.5rem;
+}
+
+.adminParticipantRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--bg3);
+  border-radius: 8px;
+  font-size: 0.8rem; color: #ccc;
+}
+
+.adminParticipantRow span:last-child {
+  color: var(--gold);
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ── Admin join badge ── */
+.adminJoinBadge {
+  background: rgba(255,209,102,0.1);
+  border: 1px solid rgba(255,209,102,0.25);
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.78rem;
+  color: var(--gold);
+  text-align: center;
+}
+
+/* ── Transfers hint ── */
+.transfersHint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
