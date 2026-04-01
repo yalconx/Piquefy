@@ -180,7 +180,7 @@ export default function Home() {
         {/* ── HERO ── */}
         <header className={styles.hero}>
           <div className={styles.logoSmall}>
-            <span className={styles.logoWhite}>Pique</span><span className={styles.logoFire}>fy</span>
+            <span className={styles.logoWhite}>PIQUE</span><span className={styles.logoFire}>FY</span>
           </div>
 
           <div className={styles.badge}>Gratis · Sin registro · Listo en 60 segundos</div>
@@ -393,7 +393,7 @@ export default function Home() {
 
         <footer className={styles.footer}>
           <div className={styles.footerLogo}>
-            <span className={styles.logoWhite}>Pique</span><span className={styles.logoFire}>fy</span>
+            <span className={styles.logoWhite}>PIQUE</span><span className={styles.logoFire}>FY</span>
           </div>
           <div className={styles.footerLinks}>
             <Link href="/privacidad">Privacidad</Link>
