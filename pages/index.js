@@ -37,7 +37,6 @@ const CARRUSEL_ITEMS = [
   { title: "¿Sale antes del trabajo Carlos o Marta?", participants: 5, time: "hace 3 h" },
 ];
 
-// Organizer PIN modal
 function OrganizerModal({ onClose }) {
   const router = useRouter();
   const [code, setCode] = useState("");
@@ -68,32 +67,77 @@ function OrganizerModal({ onClose }) {
         <button className={styles.modalClose} onClick={onClose}>✕</button>
         <div className={styles.modalIcon}>👑</div>
         <h2 className={styles.modalTitle}>Soy el organizador</h2>
-        <p className={styles.modalDesc}>Introduce el código de la porra y tu PIN de organizador para recuperar el acceso</p>
+        <p className={styles.modalDesc}>Introduce el código de la porra y tu PIN para recuperar el acceso desde cualquier dispositivo</p>
         <div className={styles.modalField}>
           <label>Código de la porra</label>
           <input
-            placeholder="XXXXX"
-            maxLength={5}
-            value={code}
+            placeholder="XXXXX" maxLength={5} value={code}
             onChange={e => { setCode(e.target.value.toUpperCase()); setError(""); }}
-            style={{textAlign:"center", letterSpacing:"0.2em", fontFamily:"'Unbounded', cursive", fontSize:"1.1rem"}}
+            style={{textAlign:"center",letterSpacing:"0.2em",fontFamily:"'Unbounded',cursive",fontSize:"1.1rem"}}
           />
         </div>
         <div className={styles.modalField}>
-          <label>Tu PIN de organizador (6 dígitos)</label>
+          <label>PIN de organizador (6 dígitos)</label>
           <input
-            placeholder="000000"
-            maxLength={6}
-            value={pin}
+            placeholder="000000" maxLength={6} value={pin}
             onChange={e => { setPin(e.target.value.replace(/\D/g,"")); setError(""); }}
             onKeyDown={e => e.key === "Enter" && verify()}
-            style={{textAlign:"center", letterSpacing:"0.3em", fontFamily:"'Unbounded', cursive", fontSize:"1.3rem"}}
+            style={{textAlign:"center",letterSpacing:"0.3em",fontFamily:"'Unbounded',cursive",fontSize:"1.3rem"}}
           />
         </div>
         {error && <p className={styles.modalError}>{error}</p>}
         <button className={styles.modalBtn} onClick={verify} disabled={loading}>
           {loading ? "Verificando..." : "Acceder como organizador →"}
         </button>
+      </div>
+    </div>
+  );
+}
+
+// Carrusel with JS scroll for reliability
+function Carrusel() {
+  const trackRef = useRef(null);
+  const posRef = useRef(0);
+  const rafRef = useRef(null);
+  const pausedRef = useRef(false);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const speed = 0.5; // px per frame
+
+    const step = () => {
+      if (!pausedRef.current) {
+        posRef.current += speed;
+        const half = track.scrollWidth / 2;
+        if (posRef.current >= half) posRef.current = 0;
+        track.style.transform = `translateX(-${posRef.current}px)`;
+      }
+      rafRef.current = requestAnimationFrame(step);
+    };
+
+    rafRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  const items = [...CARRUSEL_ITEMS, ...CARRUSEL_ITEMS];
+
+  return (
+    <div
+      className={styles.carruselTrack}
+      onMouseEnter={() => { pausedRef.current = true; }}
+      onMouseLeave={() => { pausedRef.current = false; }}
+    >
+      <div ref={trackRef} className={styles.carruselInner}>
+        {items.map((item, i) => (
+          <div key={i} className={styles.carruselCard}>
+            <div className={styles.carruselTitle}>{item.title}</div>
+            <div className={styles.carruselMeta}>
+              <span>👥 {item.participants} apostando</span>
+              <span>{item.time}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -119,13 +163,12 @@ export default function Home() {
     <>
       <Head>
         <title>Piquefy — Porras entre amigos, sin el lío de siempre | Gratis sin registro</title>
-        <meta name="description" content="Crea tu porra, prode o quiniela en 60 segundos. Sin registro. Comparte por WhatsApp, sigue el bote en directo y que gane el mejor. Piquefy calcula quién cobra y quién paga." />
-        <meta name="keywords" content="pique online amigos, porra online gratis, prode online, quiniela amigos online, penca online, porra sin registro, pique entre amigos whatsapp, porra fútbol amigos, prode mundial 2026, porra champions, porra eurovisión, pique bebe niño niña, apuesta amigos online, reto amigos, porra trabajo amigos, piquefy" />
+        <meta name="description" content="Crea tu porra, prode o quiniela en 60 segundos. Sin registro. Comparte por WhatsApp, sigue el bote en directo y que gane el mejor. Piquefy organiza los pagos sin que te preocupes de nada." />
+        <meta name="keywords" content="pique online amigos, porra online gratis, prode online, quiniela amigos online, penca online, porra sin registro, pique entre amigos whatsapp, porra fútbol amigos, prode mundial 2026, porra champions, porra eurovisión, pique bebe niño niña, piquefy" />
         <meta property="og:title" content="Piquefy — Porras entre amigos, sin el lío de siempre" />
-        <meta property="og:description" content="Crea tu porra en 60 segundos. Sin registro. Comparte por WhatsApp y que gane el mejor. Piquefy hace las cuentas." />
+        <meta property="og:description" content="Crea tu porra en 60 segundos. Seguid el bote en tiempo real. Piquefy organiza los pagos para que no os preocupéis de nada." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://piquefy.com" />
-        <meta name="twitter:card" content="summary_large_image" />
         <link rel="canonical" href="https://piquefy.com" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }} />
       </Head>
@@ -134,42 +177,33 @@ export default function Home() {
 
       <div className={styles.page}>
 
+        {/* ── HERO ── */}
         <header className={styles.hero}>
-          {/* Small logo */}
-          <div className={styles.logoSmall}>🔥 PIQUEFY</div>
+          <div className={styles.logoSmall}>
+            <span className={styles.logoWhite}>Pique</span><span className={styles.logoFire}>fy</span>
+          </div>
 
-          {/* Badge */}
           <div className={styles.badge}>Gratis · Sin registro · Listo en 60 segundos</div>
 
-          {/* Main headline */}
           <h1 className={styles.headline}>
             <span className={styles.headlineMain}>Porras entre amigos,</span>
             <span className={styles.headlineAccent}>sin el lío de siempre</span>
           </h1>
 
-          {/* Pills */}
-          <div className={styles.pills}>
-            <span className={styles.pill}>Online</span>
-            <span className={styles.pill}>Gratis</span>
-            <span className={styles.pill}>Sin líos</span>
-            <span className={styles.pill}>Comparte por WhatsApp</span>
-          </div>
-
-          {/* Subtitle */}
           <p className={styles.subtitle}>
-            Crea la tuya en 60 segundos. Cuando acabe, Piquefy te dice quién gana y quién paga a quién.<br />
-            <strong>Tú solo disfruta del pique.</strong>
+            Crea la tuya en 60 segundos, comparte por WhatsApp y seguid el bote en tiempo real.{" "}
+            <strong>Piquefy organiza los pagos para que no os preocupéis de nada.</strong>
           </p>
         </header>
 
-        {/* CTA */}
+        {/* ── CTA ── */}
         <main className={styles.main}>
           <button className={styles.createCard} onClick={() => router.push("/crear")}>
             <div className={styles.createCardInner}>
               <span className={styles.createIcon}>🔥</span>
               <div>
                 <div className={styles.createTitle}>Crear un pique</div>
-                <div className={styles.createDesc}>Tú pones las opciones. Ellos apuestan. Que empiece el pique.</div>
+                <div className={styles.createDesc}>Pon las opciones, fija las reglas y que empiece el pique. Todo el mundo apuesta.</div>
               </div>
               <span className={styles.createArrow}>→</span>
             </div>
@@ -180,8 +214,7 @@ export default function Home() {
           <div className={styles.joinBox}>
             <input
               className={styles.codeInput}
-              placeholder="CÓDIGO"
-              maxLength={5}
+              placeholder="CÓDIGO" maxLength={5}
               value={joinCode}
               onChange={e => { setJoinCode(e.target.value.toUpperCase()); setError(""); }}
               onKeyDown={e => e.key === "Enter" && joinPorra()}
@@ -198,7 +231,7 @@ export default function Home() {
           </button>
         </main>
 
-        {/* Geo bar */}
+        {/* ── GEO & EVENTS ── */}
         <div className={styles.geoBar}>
           <span className={styles.geoLabel}>También conocido como:</span>
           <Link href="/prode" className={styles.geoLink}>🇦🇷 Prode</Link>
@@ -207,7 +240,6 @@ export default function Home() {
           <Link href="/porra" className={styles.geoLink}>🇪🇸 Porra</Link>
         </div>
 
-        {/* Event chips */}
         <div className={styles.eventsBar}>
           <span className={styles.eventsLabel}>Piques populares:</span>
           <div className={styles.eventLinks}>
@@ -216,29 +248,11 @@ export default function Home() {
             <Link href="/pique/mundial-2026" className={styles.eventChip}>🏆 Mundial 2026</Link>
             <Link href="/pique/oscar" className={styles.eventChip}>🎬 Oscar</Link>
             <Link href="/pique/clasico" className={styles.eventChip}>🔥 El Clásico</Link>
-            <Link href="/pique/social" className={styles.eventChip}>👶 Baby shower · Realities · Trabajo · Lo que sea</Link>
+            <Link href="/pique/social" className={styles.eventChip}>👶 Baby shower · Realities · Lo que sea</Link>
           </div>
         </div>
 
-        {/* Carrusel de actividad */}
-        <div className={styles.carruselSection}>
-          <p className={styles.carruselLabel}>🔴 Piques activos ahora mismo</p>
-          <div className={styles.carruselTrack}>
-            <div className={styles.carruselInner}>
-              {[...CARRUSEL_ITEMS, ...CARRUSEL_ITEMS].map((item, i) => (
-                <div key={i} className={styles.carruselCard}>
-                  <div className={styles.carruselTitle}>{item.title}</div>
-                  <div className={styles.carruselMeta}>
-                    <span>👥 {item.participants} apostando</span>
-                    <span>{item.time}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* SEO content */}
+        {/* ── SEO SECTION ── */}
         <section className={styles.seoSection}>
 
           {/* How it works */}
@@ -252,8 +266,8 @@ export default function Home() {
               {[
                 { n: "1", t: "Crea el pique", d: "Dale un título, añade las opciones y fija cuándo cierra" },
                 { n: "2", t: "Comparte el código", d: "Por WhatsApp, por enlace o como quieras" },
-                { n: "3", t: "Todos apuestan", d: "Cada amigo entra desde su móvil sin instalar nada" },
-                { n: "4", t: "Piquefy hace las cuentas", d: "Calcula quién gana y quién le pasa pasta a quién" },
+                { n: "3", t: "Todo el mundo apuesta", d: "Cada uno entra desde su móvil sin instalar nada" },
+                { n: "4", t: "Piquefy hace las cuentas", d: "Calcula quién le pasa pasta a quién. Vosotros solo pagáis." },
               ].map((s, i) => (
                 <div key={i} className={styles.seoStep}>
                   <span className={styles.seoStepN}>{s.n}</span>
@@ -266,6 +280,12 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Carrusel — BELOW the explainer block */}
+          <div className={styles.carruselSection}>
+            <p className={styles.carruselLabel}>🔴 Piques activos ahora mismo</p>
+            <Carrusel />
+          </div>
+
           {/* Payments explainer */}
           <div className={styles.paymentsBlock}>
             <h2 className={styles.paymentsTitle}>¿Quién le debe a quién? Piquefy lo sabe.</h2>
@@ -273,8 +293,8 @@ export default function Home() {
             <div className={styles.paymentsSteps}>
               {[
                 { icon: "💸", t: "Cada uno apuesta su cantidad", d: "Tú fijas el mínimo y el máximo. Ellos eligen cuánto se juegan." },
-                { icon: "🏆", t: "Se declara el ganador", d: "El organizador marca el resultado cuando acaba el evento." },
-                { icon: "🧮", t: "Piquefy calcula los reembolsos", d: "La app dice exactamente quién le pasa pasta a quién y cuánto. Sin calculadoras, sin capturas de pantalla, sin ese momento raro de cobrar." },
+                { icon: "🏆", t: "Se declara el resultado", d: "El organizador marca quién ha ganado cuando acaba el evento." },
+                { icon: "🧮", t: "Piquefy calcula los reembolsos", d: "La app dice exactamente quién le pasa pasta a quién y cuánto. Sin capturas, sin calculadoras, sin ese momento raro de cobrar." },
               ].map((s, i) => (
                 <div key={i} className={styles.paymentsStep}>
                   <div className={styles.paymentsStepIcon}>{s.icon}</div>
@@ -297,7 +317,7 @@ export default function Home() {
                 { icon: "⚽", title: "Porra de fútbol", text: "Champions, LaLiga, El Clásico, Mundial 2026... El pique deportivo de toda la vida, digitalizado.", link: "/porra" },
                 { icon: "👶", title: "¿Niño o niña?", text: "El pique más esperado del embarazo. Cada amigo elige su predicción en el baby shower.", link: "/pique/social" },
                 { icon: "🎤", title: "Porra de Eurovisión", text: "¿Quién gana el festival? Que cada uno defienda su favorito mientras seguís la gala.", link: "/pique/eurovision" },
-                { icon: "📺", title: "Realities y series", text: "¿Quién sale esta semana? ¿Quién gana La Isla? El pique perfecto para ver la tele en grupo.", link: "/pique/social" },
+                { icon: "📺", title: "Realities y series", text: "¿Quién sale esta semana? El pique perfecto para ver la tele en grupo.", link: "/pique/social" },
                 { icon: "💼", title: "Piques de trabajo", text: "¿Quién llega tarde? ¿Conseguimos el cliente? El pique de oficina de toda la vida.", link: "/pique/social" },
                 { icon: "🎬", title: "Premios Oscar", text: "¿Mejor película? ¿Mejor director? Un pique por categoría para los más cinéfilos.", link: "/pique/oscar" },
                 { icon: "🏆", title: "Prode del Mundial 2026", text: "El torneo más grande del fútbol. El prode más épico con tus amigos.", link: "/pique/mundial-2026" },
@@ -317,10 +337,10 @@ export default function Home() {
             <h2 className={styles.seoH2center}>El pique online para todo el mundo hispano</h2>
             <div className={styles.seoGeoGrid}>
               {[
-                { flag: "🇪🇸", country: "España", term: "Porra", desc: "En España el pique entre amigos se llama porra. Crea tu porra online en un minuto, comparte el código y que empiece la competición.", link: "/porra", cta: "Crear porra online →" },
-                { flag: "🇦🇷", country: "Argentina · Uruguay", term: "Prode", desc: "En Argentina y Uruguay se llama prode. Armá tu prode online con los pibes, compartí el código y seguí el ranking en vivo.", link: "/prode", cta: "Armar prode online →" },
-                { flag: "🇲🇽", country: "México · Colombia", term: "Quiniela", desc: "En México y Colombia lo llaman quiniela. Organiza tu quiniela entre amigos, comparte por WhatsApp y que gane el más listo.", link: "/quiniela", cta: "Organizar quiniela →" },
-                { flag: "🇺🇾", country: "Uruguay · Paraguay", term: "Penca", desc: "En Uruguay y Paraguay se llama penca. Armá tu penca online con los amigos para el mundial o la champions.", link: "/penca", cta: "Armar penca online →" },
+                { flag: "🇪🇸", country: "España", term: "Porra", desc: "En España el pique entre amigos se llama porra. Crea tu porra online en un minuto, comparte el código y que empiece.", link: "/porra", cta: "Crear porra online →" },
+                { flag: "🇦🇷", country: "Argentina · Uruguay", term: "Prode", desc: "En Argentina y Uruguay se llama prode. Armá tu prode con los pibes, compartí el código y seguí el ranking en vivo.", link: "/prode", cta: "Armar prode online →" },
+                { flag: "🇲🇽", country: "México · Colombia", term: "Quiniela", desc: "En México y Colombia lo llaman quiniela. Organiza la tuya entre amigos, comparte por WhatsApp y que gane el más listo.", link: "/quiniela", cta: "Organizar quiniela →" },
+                { flag: "🇺🇾", country: "Uruguay · Paraguay", term: "Penca", desc: "En Uruguay y Paraguay se llama penca. Armá tu penca para el mundial o la champions.", link: "/penca", cta: "Armar penca online →" },
               ].map((g, i) => (
                 <Link key={i} href={g.link} className={styles.geoCard}>
                   <div className={styles.geoFlag}>{g.flag}</div>
@@ -339,13 +359,13 @@ export default function Home() {
             <div className={styles.seoFeaturesGrid}>
               {[
                 { icon: "⚡", t: "Listo en 60 segundos", d: "Sin registro, sin configuraciones. Título, opciones, fecha de cierre y listo." },
-                { icon: "📊", t: "Ranking en tiempo real", d: "Todos ven quién apuesta qué y cuánto hay en el bote. La tensión crece con cada nueva apuesta." },
+                { icon: "📊", t: "Bote en tiempo real", d: "Todos ven quién apuesta qué y cuánto hay acumulado. La tensión crece con cada apuesta." },
                 { icon: "💸", t: "Importe mínimo y máximo", d: "El organizador puede fijar un rango para que todos jueguen en igualdad." },
-                { icon: "🔒", t: "Cierre automático", d: "Fija la fecha y hora de cierre. Cuando llega el momento, nadie puede cambiar su apuesta." },
-                { icon: "🧮", t: "Cálculo automático tipo Tricount", d: "Piquefy calcula quién le debe a quién para liquidar el pique con el mínimo de transferencias." },
+                { icon: "🔒", t: "Cierre automático", d: "Fija la fecha y hora. Cuando llega el momento, nadie puede cambiar su apuesta." },
+                { icon: "🧮", t: "Cálculo automático tipo Tricount", d: "Piquefy calcula quién le debe a quién con el mínimo de transferencias." },
                 { icon: "📸", t: "Imagen viral del ganador", d: "El ganador recibe su imagen para compartir en Stories y presumir de que tenía razón." },
-                { icon: "📲", t: "Invitar por WhatsApp", d: "Botón de invitar integrado. El enlace lleva directo al pique, sin buscar nada." },
-                { icon: "🌍", t: "Para toda Hispanoamérica", d: "Funciona igual en España, Argentina, México, Colombia, Uruguay, Chile y cualquier país hispano." },
+                { icon: "📲", t: "Invitar por WhatsApp", d: "Botón de invitar integrado. El enlace lleva directo al pique." },
+                { icon: "🌍", t: "Para toda Hispanoamérica", d: "Funciona igual en España, Argentina, México, Colombia, Uruguay y Chile." },
               ].map((f, i) => (
                 <div key={i} className={styles.featureCard}>
                   <span className={styles.featureIcon}>{f.icon}</span>
@@ -372,7 +392,9 @@ export default function Home() {
         </section>
 
         <footer className={styles.footer}>
-          <div className={styles.footerLogo}>PIQUEFY</div>
+          <div className={styles.footerLogo}>
+            <span className={styles.logoWhite}>Pique</span><span className={styles.logoFire}>fy</span>
+          </div>
           <div className={styles.footerLinks}>
             <Link href="/privacidad">Privacidad</Link>
             <Link href="/legal">Aviso legal</Link>

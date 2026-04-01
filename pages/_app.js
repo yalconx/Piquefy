@@ -9,7 +9,14 @@ export default function App({ Component, pageProps }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0A0A0A" />
         <meta name="robots" content="index, follow" />
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>" />
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230A0A0A'/><text y='.9em' font-size='80' x='10'>🔥</text></svg>" />
+        {/* OG Image global */}
+        <meta property="og:image" content="https://piquefy.com/api/og" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:image" content="https://piquefy.com/api/og" />
+        <meta name="twitter:card" content="summary_large_image" />
+        {/* Schema.org */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify({
@@ -21,13 +28,12 @@ export default function App({ Component, pageProps }) {
                 "url": "https://piquefy.com",
                 "applicationCategory": "GameApplication",
                 "operatingSystem": "Web, iOS, Android",
-                "description": "Plataforma de piques, porras y retos entre amigos. Sin registro, sin dinero real. Comparte por WhatsApp y que gane el mejor.",
+                "description": "Porras entre amigos, sin el lío de siempre. Crea tu porra en 60 segundos, comparte por WhatsApp y Piquefy organiza los pagos.",
                 "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-                "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "ratingCount": "124" }
               },
               {
                 "@type": "Game",
-                "name": "Piquefy — Piques y porras entre amigos",
+                "name": "Piquefy — Porras entre amigos",
                 "url": "https://piquefy.com",
                 "genre": ["Social Game", "Prediction Game", "Party Game"],
                 "playMode": "MultiPlayer",
@@ -38,19 +44,14 @@ export default function App({ Component, pageProps }) {
         />
       </Head>
 
-      {/* Google Analytics GA4 — G-X4TMF772ZB */}
-      <Script
-        src="https://www.googletagmanager.com/gtag/js?id=G-X4TMF772ZB"
-        strategy="afterInteractive"
-      />
+      {/* Google Analytics GA4 */}
+      <Script src="https://www.googletagmanager.com/gtag/js?id=G-X4TMF772ZB" strategy="afterInteractive" />
       <Script id="google-analytics" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', 'G-X4TMF772ZB', {
-            page_path: window.location.pathname,
-          });
+          gtag('config', 'G-X4TMF772ZB', { page_path: window.location.pathname });
         `}
       </Script>
 
